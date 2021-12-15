@@ -34,6 +34,14 @@ public class UserService {
     }
 
     /**
+     * Gathers a list of all customers
+     * @return a list of all customers in the CustomerRepository
+     */
+    public List<Customer> listCustomers() {
+        return customerRepository.findAll();
+    }
+
+    /**
      * Gets user information by ID (or throws exception if non-existent)
      * @param id the ID number of the user to gather information on
      * @return the requested user's information

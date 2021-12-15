@@ -4,6 +4,7 @@ import com.udacity.jdnd.course3.critter.controllers.DTO.CustomerDTO;
 import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeRequestDTO;
 import com.udacity.jdnd.course3.critter.model.persistence.Customer;
+import com.udacity.jdnd.course3.critter.model.persistence.Employee;
 import com.udacity.jdnd.course3.critter.model.persistence.User;
 import com.udacity.jdnd.course3.critter.services.UserService;
 import com.udacity.jdnd.course3.critter.services.exceptions.UserNotFoundException;
@@ -14,6 +15,7 @@ import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles web requests related to Users.
@@ -44,21 +46,31 @@ public class UserController {
                 user.setName(customerDTO.getName());
                 customer.setUser(user);
             } catch(UserNotFoundException ex) {}
+        } else {
+            // customerDTO.getPetIds();
+            // Set Pets
+            User user = new User();
+            user.setName(customerDTO.getName());
+            customer.setUser(user);
+            Customer savedCustomer = this.userService.saveCustomer(customer);
+            customerDTO.setId(savedCustomer.getId());
         }
-        // customerDTO.getPetIds();
-        // Set Pets
-
-        Customer savedCustomer = this.userService.saveCustomer(customer);
-        customerDTO.setId(savedCustomer.getId());
 
         return customerDTO;
-        // set User
-        // customerDTO.getPetIds()
     }
 
     @GetMapping("/customer")
     public List<CustomerDTO> getAllCustomers(){
-        throw new UnsupportedOperationException();
+        List<Customer> customers = this.userService.listCustomers();
+        return customers.stream().map((Customer customer) -> {
+            CustomerDTO customerDTO = new CustomerDTO();
+            customerDTO.setId(customer.getId());
+            customerDTO.setName(customer.getUser().getName());
+            customerDTO.setPhoneNumber(customer.getPhoneNumber());
+            customerDTO.setNotes(customer.getNotes());
+            // Pet IDs
+            return customerDTO;
+        }).collect(Collectors.toList());
     }
 
     @GetMapping("/customer/pet/{petId}")
@@ -68,12 +80,36 @@ public class UserController {
 
     @PostMapping("/employee")
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        throw new UnsupportedOperationException();
+        Employee employee = new Employee();
+        employee.setId(employeeDTO.getId());
+        //employee.setDaysAvailable(employeeDTO.getDaysAvailable());
+        //employee.setSkills(employeeDTO.getSkills());
+
+        if (employeeDTO.getId() != 0) {
+            try {
+                User user = this.userService.findUserById(employeeDTO.getId());
+                user.setName(employeeDTO.getName());
+                employee.setUser(user);
+            } catch(UserNotFoundException ex) {}
+        } else {
+            User user = new User();
+            user.setName(employeeDTO.getName());
+            employee.setUser(user);
+            Employee savedEmployee = this.userService.saveEmployee(employee);
+            employeeDTO.setId(savedEmployee.getId());
+        }
+
+        return employeeDTO;
     }
 
-    @PostMapping("/employee/{employeeId}")
+    @GetMapping("/employee/{employeeId}")
     public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-        throw new UnsupportedOperationException();
+        try {
+            Employee employee = this.userService.findEmployeeById(employeeId);
+
+        } catch (UserNotFoundException ex) {};
+
+        return new EmployeeDTO();
     }
 
     @PutMapping("/employee/{employeeId}")

@@ -13,7 +13,7 @@ public class Customer {
     @JsonProperty
     private Long id;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
 
     private String phoneNumber;
