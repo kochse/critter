@@ -1,9 +1,18 @@
-package com.udacity.jdnd.course3.critter.user;
+package com.udacity.jdnd.course3.critter.controllers;
 
+import com.udacity.jdnd.course3.critter.controllers.DTO.CustomerDTO;
+import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeDTO;
+import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeRequestDTO;
+import com.udacity.jdnd.course3.critter.model.persistence.Customer;
+import com.udacity.jdnd.course3.critter.model.persistence.User;
+import com.udacity.jdnd.course3.critter.services.UserService;
+import com.udacity.jdnd.course3.critter.services.exceptions.UserNotFoundException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -16,9 +25,35 @@ import java.util.Set;
 @RequestMapping("/user")
 public class UserController {
 
+    UserService userService;
+
+    UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/customer")
     public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO){
-        throw new UnsupportedOperationException();
+        Customer customer = new Customer();
+        customer.setId(customerDTO.getId());
+        customer.setNotes(customerDTO.getNotes());
+        customer.setPhoneNumber(customerDTO.getPhoneNumber());
+
+        if (customerDTO.getId() != 0) {
+            try {
+                User user = this.userService.findUserById(customerDTO.getId());
+                user.setName(customerDTO.getName());
+                customer.setUser(user);
+            } catch(UserNotFoundException ex) {}
+        }
+        // customerDTO.getPetIds();
+        // Set Pets
+
+        Customer savedCustomer = this.userService.saveCustomer(customer);
+        customerDTO.setId(savedCustomer.getId());
+
+        return customerDTO;
+        // set User
+        // customerDTO.getPetIds()
     }
 
     @GetMapping("/customer")
