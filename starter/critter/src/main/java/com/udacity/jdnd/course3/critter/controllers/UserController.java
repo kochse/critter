@@ -10,6 +10,7 @@ import com.udacity.jdnd.course3.critter.model.persistence.User;
 import com.udacity.jdnd.course3.critter.services.PetService;
 import com.udacity.jdnd.course3.critter.services.UserService;
 import com.udacity.jdnd.course3.critter.services.exceptions.UserNotFoundException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,8 +95,12 @@ public class UserController {
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         employee.setId(employeeDTO.getId());
-        employee.setDaysAvailable(employeeDTO.getDaysAvailable().toString());
-        employee.setSkills(employeeDTO.getSkills().toString());
+        if (employeeDTO.getDaysAvailable() != null) {
+            employee.setDaysAvailable(employeeDTO.getDaysAvailable().toString());
+        }
+        if (employeeDTO.getSkills() != null) {
+            employee.setSkills(employeeDTO.getSkills().toString());
+        }
 
         if (employeeDTO.getId() != 0) {
             try {
@@ -115,13 +120,11 @@ public class UserController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-        try {
-            Employee employee = this.userService.findEmployeeById(employeeId);
-
-        } catch (UserNotFoundException ex) {};
-
-        return new EmployeeDTO();
+    public EmployeeDTO getEmployee(@PathVariable long employeeId) throws UserNotFoundException {
+        Employee employee = this.userService.findEmployeeById(employeeId);
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        BeanUtils.copyProperties(employee, employeeDTO);
+        return employeeDTO;
     }
 
     @PutMapping("/employee/{employeeId}")
