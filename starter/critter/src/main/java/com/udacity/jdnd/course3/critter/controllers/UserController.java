@@ -5,7 +5,9 @@ import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.controllers.DTO.EmployeeRequestDTO;
 import com.udacity.jdnd.course3.critter.model.persistence.Customer;
 import com.udacity.jdnd.course3.critter.model.persistence.Employee;
+import com.udacity.jdnd.course3.critter.model.persistence.Pet;
 import com.udacity.jdnd.course3.critter.model.persistence.User;
+import com.udacity.jdnd.course3.critter.services.PetService;
 import com.udacity.jdnd.course3.critter.services.UserService;
 import com.udacity.jdnd.course3.critter.services.exceptions.UserNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +30,11 @@ import java.util.stream.Collectors;
 public class UserController {
 
     UserService userService;
+    PetService petService;
 
-    UserController(UserService userService) {
+    UserController(UserService userService, PetService petService) {
         this.userService = userService;
+        this.petService = petService;
     }
 
     @PostMapping("/customer")
@@ -47,11 +51,12 @@ public class UserController {
                 customer.setUser(user);
             } catch(UserNotFoundException ex) {}
         } else {
-            // customerDTO.getPetIds();
-            // Set Pets
             User user = new User();
             user.setName(customerDTO.getName());
             customer.setUser(user);
+            if (customerDTO.getPetIds() != null && customerDTO.getPetIds().size() > 0) {
+                customer.setPets(petService.findPetsById(customerDTO.getPetIds()));
+            }
             Customer savedCustomer = this.userService.saveCustomer(customer);
             customerDTO.setId(savedCustomer.getId());
         }
@@ -65,10 +70,17 @@ public class UserController {
         return customers.stream().map((Customer customer) -> {
             CustomerDTO customerDTO = new CustomerDTO();
             customerDTO.setId(customer.getId());
-            customerDTO.setName(customer.getUser().getName());
+            if (customer.getUser() != null) {
+                customerDTO.setName(customer.getUser().getName());
+            }
             customerDTO.setPhoneNumber(customer.getPhoneNumber());
             customerDTO.setNotes(customer.getNotes());
-            // Pet IDs
+
+            List<Pet> pets = customer.getPets();
+            if (pets != null) {
+                List<Long> petIds = pets.stream().map((Pet pet) -> pet.getId()).collect(Collectors.toList());
+                customerDTO.setPetIds(petIds);
+            }
             return customerDTO;
         }).collect(Collectors.toList());
     }
@@ -82,8 +94,8 @@ public class UserController {
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         employee.setId(employeeDTO.getId());
-        //employee.setDaysAvailable(employeeDTO.getDaysAvailable());
-        //employee.setSkills(employeeDTO.getSkills());
+        employee.setDaysAvailable(employeeDTO.getDaysAvailable().toString());
+        employee.setSkills(employeeDTO.getSkills().toString());
 
         if (employeeDTO.getId() != 0) {
             try {

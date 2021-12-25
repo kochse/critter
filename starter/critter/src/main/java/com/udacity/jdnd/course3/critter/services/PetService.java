@@ -7,6 +7,7 @@ import com.udacity.jdnd.course3.critter.model.persistence.repositories.PetReposi
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,5 +45,22 @@ public class PetService {
      */
     public List<Pet> listPets() {
         return repository.findAll();
+    }
+
+    /**
+     * Get Pets List for a list of Pet IDs
+     * @return a list of all pets in the PetsRepository
+     */
+    public List<Pet> findPetsById(List<Long> pedIds) {
+
+        List<Pet> result = new ArrayList<>();
+        for (int i = 0; i < pedIds.size(); i++) {
+            Optional<Pet> optional = this.repository.findById(pedIds.get(i));
+            if (optional.isPresent()) {
+                result.add(optional.get());
+            }
+        }
+
+        return result;
     }
 }

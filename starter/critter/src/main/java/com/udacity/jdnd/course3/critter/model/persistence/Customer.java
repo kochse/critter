@@ -30,6 +30,14 @@ public class Customer {
         this.pets = pets;
     }
 
+    public Customer(Long id, User user, String phoneNumber, String notes, List<Pet> pets) {
+        this.id = id;
+        this.user = user;
+        this.phoneNumber = phoneNumber;
+        this.notes = notes;
+        this.pets = pets;
+    }
+
     public Customer() {
 
     }
